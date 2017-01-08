@@ -1,5 +1,6 @@
 package a40i6_capstone.tabs;
 
+import android.content.res.Resources;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.TabHost;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -156,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
+            // Show 4 total pages.
             return 4;
         }
 
@@ -175,4 +177,6 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
+
+
 }
