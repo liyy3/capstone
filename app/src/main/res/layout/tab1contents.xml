@@ -9,10 +9,10 @@
     tools:context="a40i6_capstone.tabs.MainActivity$PlaceholderFragment">
 
     <TextView
-        android:id="@+id/section_label"
+        android:id="@+id/Home_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Text for HOME Test for new branch created Grace"/>
+        android:text="Text for HOME"/>
 
     <Button
         android:text="Start"
