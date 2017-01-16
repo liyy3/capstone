@@ -151,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
                 case 3:
                     Tab4 tab4 = new Tab4();
                     return tab4;
+                case 4:
+                    Tab5 tab5 = new Tab5();
+                    return tab5;
                 default:
                     return null;
             }
@@ -158,8 +161,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 4 total pages.
-            return 4;
+            // Show 5 total pages.
+            return 5;
         }
 
         @Override
@@ -173,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
                     return "HISTORY";
                 case 3:
                     return "CONTACT INFORMATION";
+                case 4:
+                    return "TUTORIAL";
             }
             return null;
         }

@@ -2,4 +2,12 @@
     <string name="app_name">Tabs</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="Tutorial1">Welcome to the Tutorial! This is where we will be giving you instructions as to how to use this app.\n\n
+    1. Please put on the shirt and ensure that the pads are attached to your skin as shown below. \n\n</string>
+    <string name="Tutorial2">Ensure that there are no excess lotion or oils on your skin to ensure better connection of the pads.\n\n
+        2. Press the <b>START</b> button on the <b>HOME</b> page to start real time monitoring.\n\n
+        <b>HOME tab</b>: Location of START and STOP button for ECG readings.\n\n
+        <b>BASELINE tab</b>: Location of baseline image used for comparison purposes. New baseline needs to be recalibrated every six months.\n\n
+        <b>HISTORY tab</b>: Listing of medical history.\n\n
+        <b>CONTACT INFO tab</b>: Input Primary and Secondary contact information. They will be contacted automatically if an emergency occurs.\n\n</string>
 </resources>

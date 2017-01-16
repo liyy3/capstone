@@ -17,7 +17,7 @@
             android:id="@+id/section_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Text for CONTACT INFORMATION"/>
+            android:text="Please enter Primary and Secondary contact information"/>
 
         <EditText
             android:layout_width="wrap_content"
