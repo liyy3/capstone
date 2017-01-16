@@ -12,7 +12,7 @@
         android:id="@+id/Home_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Text for HOME"/>
+        android:text=""/>
 
     <Button
         android:text="Start"
