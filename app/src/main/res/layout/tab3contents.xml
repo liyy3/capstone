@@ -9,15 +9,25 @@
     tools:context="a40i6_capstone.tabs.MainActivity$PlaceholderFragment">
 
     <TextView
-        android:id="@+id/section_label"
+        android:id="@+id/tab3text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Real Time Input Graph\n"/>
+        android:text=" "/>
 
     <!-- we add graph view to display -->
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
         android:layout_width="match_parent"
         android:layout_height="300dp" />
+
+    <Button
+        android:text="Start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonstart"
+        android:onClick="TextChange"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp" />
 
 </RelativeLayout>
