@@ -26,6 +26,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -45,7 +46,8 @@ public class Tab3 extends Fragment {
     public int lastX = 0;
     private final static int REQUEST_ENABLE_BT = 1;
     BluetoothAdapter blueAdaptor = null;
-    private static final UUID my_uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");;
+    private static final UUID my_uuid =UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    //private static UUID my_uuid;
     BluetoothDevice Device;
     BluetoothSocket Socket = null;
     java.io.OutputStream OutputStream;
@@ -72,7 +74,7 @@ public class Tab3 extends Fragment {
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
         viewport.setMinY(0);
-        viewport.setMaxY(10);
+        viewport.setMaxY(600);
         viewport.setXAxisBoundsManual(true);
         viewport.setMinX(0);
         viewport.setMaxX(10);
@@ -122,7 +124,7 @@ public class Tab3 extends Fragment {
             @Override
             public void run() {
                 // we add 100 new entries
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 10; i++) {
                     getActivity().runOnUiThread(new Runnable() {
 
                         @Override
@@ -132,6 +134,7 @@ public class Tab3 extends Fragment {
 
                                 myThreadConnectBTdevice = new ThreadConnectBTdevice(Device);
                                 myThreadConnectBTdevice.start();
+                            myThreadConnectBTdevice.cancel();
                             //} catch (IOException ex) { ex.printStackTrace();}
 
                             /*try {
@@ -187,7 +190,7 @@ public class Tab3 extends Fragment {
         }
     }
 
-    //Called in ThreadConnectBTdevice once connect successed
+    //Called in ThreadConnectBTdevice once connect succeeds
     //to start ThreadConnected
     private void startThreadConnected(BluetoothSocket socket){
 
@@ -206,8 +209,10 @@ public class Tab3 extends Fragment {
 
         private ThreadConnectBTdevice(BluetoothDevice device) {
             bluetoothDevice = device;
-
+            //my_uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
             try {
+                Log.d(getClass().getSimpleName(), "Device: " + device);
+                Log.d(getClass().getSimpleName(), "UUID: " + my_uuid);
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(my_uuid);
 
             } catch (IOException e) {
@@ -222,25 +227,24 @@ public class Tab3 extends Fragment {
             try {
                 bluetoothSocket.connect();
                 success = true;
+                Log.d(getClass().getSimpleName(), "Status of success: " + success);
             } catch (IOException e) {
-                e.printStackTrace();
-
-                final String eMessage = e.getMessage();
-                getActivity().runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Log.d(getClass().getSimpleName(), "something wrong bluetoothSocket.connect(): \n" + eMessage);
-                    }
-                });
-
                 try {
+                    Socket =(BluetoothSocket) Device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(Device,1);
+                    Socket.connect();
+                    success = true;
+                    Log.d(getClass().getSimpleName(), "Status of success: " + success);
+                }catch (Exception e2) {
+                    Log.e("", "Couldn't establish Bluetooth connection!");
+                }
+
+/*                try {
                     bluetoothSocket.close();
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-            }
+            }*/
 
             if(success){
                 //connect successful
@@ -252,7 +256,7 @@ public class Tab3 extends Fragment {
 
                     @Override
                     public void run() {
-                        //textStatus.setText(msgconnected);
+                        //textView.setText(msgconnected);
 
                         //listViewPairedDevice.setVisibility(View.GONE);
                         //inputPane.setVisibility(View.VISIBLE);
@@ -262,7 +266,7 @@ public class Tab3 extends Fragment {
             }else{
                 //fail
             }
-        }
+        }}
 
         public void cancel() {
 
@@ -277,6 +281,7 @@ public class Tab3 extends Fragment {
         }
 
     }
+
     /*
 ThreadConnected:
 Background Thread to handle Bluetooth data communication
@@ -295,6 +300,7 @@ after connected
             try {
                 in = socket.getInputStream();
                 out = socket.getOutputStream();
+                Log.d(getClass().getSimpleName(), "In out stream ran");
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -307,15 +313,17 @@ after connected
         @Override
         public void run() {
             byte[] buffer = new byte[1024];
-            int bytes;
+            int bytes=0;
 
             while (true) {
                 try {
+                    Log.d(getClass().getSimpleName(), "Bytes: "+ bytes);
                     bytes = connectedInputStream.read(buffer);
-                    //String strReceived = new String(buffer, 0, bytes);
-                    final int msgReceived = bytes; //+
-                            //" bytes received:\n";
-                            //+ strReceived;
+                    String strReceived = new String(buffer, 0, bytes);
+
+                    final String msgReceived = String.valueOf(bytes) +
+                            " bytes received:\n"
+                            + strReceived;
 
                     getActivity().runOnUiThread(new Runnable(){
 
