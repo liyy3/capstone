@@ -45,10 +45,6 @@ public class Tab1 extends Fragment{
             }
         });
         return rootView;
+
     }
-
-
-
-
-
 }

@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +27,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -40,23 +42,23 @@ import static a40i6_capstone.tabs.R.layout.tab3contents;
  */
 
 public class Tab3 extends Fragment {
+    boolean startGraph;
     public static final Random RANDOM = new Random();
     public LineGraphSeries<DataPoint> series;
     public int lastX = 0;
     private final static int REQUEST_ENABLE_BT = 1;
-    BluetoothAdapter blueAdaptor = null;
-    private static final UUID my_uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");;
+    //BluetoothAdapter blueAdaptor = null;
+    private static final UUID my_uuid =UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    //private static UUID my_uuid;
     BluetoothDevice Device;
-    BluetoothSocket Socket = null;
+    //BluetoothSocket Socket = null;
     java.io.OutputStream OutputStream;
     InputStream InputStream;
     //Thread workerThread;
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
-    volatile boolean stopWorker;
-    byte[] readBuffer;
-    int readBufferPosition;
 
+    //Creating start/stop button to control data transfer
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,6 +67,35 @@ public class Tab3 extends Fragment {
         TextView textView = (TextView) rootView.findViewById(R.id.tab3text);
         // we get graph view instance
         GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
+
+        //Code to get the button from layout file
+        Button btn = (Button) rootView.findViewById(R.id.buttonGraph);
+        final TextView startstopmsg = (TextView) rootView.findViewById(R.id.tab3text);
+        btn.setTag(0);
+        btn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                //Implement the code to run on button click here
+                final int status = (Integer) view.getTag();
+                switch (status) {
+                    case 0:
+                        ((Button) view).setText("Stop");
+                        startstopmsg.setText("Device is now ON");
+                        view.setTag(1); //pause
+                        startGraph = true;
+                        break;
+                    case 1:
+                        ((Button) view).setText("Start");
+                        startstopmsg.setText("Device is now OFF");
+                        view.setTag(0); //pause
+                        startGraph = false;
+                        break;
+                }
+
+            }
+        });
+
         // data
         series = new LineGraphSeries<DataPoint>();
         graph.addSeries(series);
@@ -72,7 +103,7 @@ public class Tab3 extends Fragment {
         Viewport viewport = graph.getViewport();
         viewport.setYAxisBoundsManual(true);
         viewport.setMinY(0);
-        viewport.setMaxY(10);
+        viewport.setMaxY(800);
         viewport.setXAxisBoundsManual(true);
         viewport.setMinX(0);
         viewport.setMaxX(10);
@@ -122,39 +153,45 @@ public class Tab3 extends Fragment {
             @Override
             public void run() {
                 // we add 100 new entries
-                for (int i = 0; i < 100; i++) {
-                    getActivity().runOnUiThread(new Runnable() {
+                    for (int i = 0; i < 100; i++) {
+                        getActivity().runOnUiThread(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            //addEntry();
-                            //try {
+                            @Override
+                            public void run() {
+                                //addEntry();
+                                //try {
 
-                                myThreadConnectBTdevice = new ThreadConnectBTdevice(Device);
-                                myThreadConnectBTdevice.start();
-                            //} catch (IOException ex) { ex.printStackTrace();}
+                                if(startGraph == true) {
+                                    myThreadConnectBTdevice = new ThreadConnectBTdevice(Device);
+                                    myThreadConnectBTdevice.start();
+                                    Log.d(getClass().getSimpleName(), "Test");
+                                    myThreadConnectBTdevice.cancel();
+                                }
+                                //} catch (IOException ex) { ex.printStackTrace();}
 
                             /*try {
                                 closeBT();
                             }
                             catch (IOException ex) { ex.printStackTrace(); }*/
 
-                        }
-                    });
+                            }
+                        });
 
-                    // sleep to slow down the add of entries
-                    try {
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        // manage error ...
+                        // sleep to slow down the add of entries
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                            // manage error ...
+
+
+                        }
                     }
                 }
-            }
-        }).start();
+            }).start();
     }
 
-    // add random data to graph
-    public void addEntry() {
+    //add random data to graph
+   /*public void addEntry() {
         // here, we choose to display max 10 points on the viewport and we scroll to end
         series.appendData(new DataPoint(lastX++, RANDOM.nextDouble() * 10d), true, 50);
     }
@@ -177,7 +214,7 @@ public class Tab3 extends Fragment {
         InputStream.close();
         Socket.close();
 
-    }
+    }*/
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -187,7 +224,7 @@ public class Tab3 extends Fragment {
         }
     }
 
-    //Called in ThreadConnectBTdevice once connect successed
+    //Called in ThreadConnectBTdevice once connect succeeds
     //to start ThreadConnected
     private void startThreadConnected(BluetoothSocket socket){
 
@@ -206,8 +243,10 @@ public class Tab3 extends Fragment {
 
         private ThreadConnectBTdevice(BluetoothDevice device) {
             bluetoothDevice = device;
-
+            //my_uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
             try {
+
+                //Log.d(getClass().getSimpleName(), "UUID: " + my_uuid);
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(my_uuid);
 
             } catch (IOException e) {
@@ -219,48 +258,70 @@ public class Tab3 extends Fragment {
         @Override
         public void run() {
             boolean success = false;
+            if (bluetoothSocket.isConnected() == true) {
+                try{
+                    bluetoothSocket.close();
+                } catch (IOException closeException) {
+                    Log.d(getClass().getSimpleName(), "Socket cannot be closed!");
+                }
+            }
             try {
+                //Log.d(getClass().getSimpleName(), "Device: " + Device);
                 bluetoothSocket.connect();
                 success = true;
+                //Log.d(getClass().getSimpleName(), "Status of success: " + success);
             } catch (IOException e) {
-                e.printStackTrace();
-
-                final String eMessage = e.getMessage();
-                getActivity().runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Log.d(getClass().getSimpleName(), "something wrong bluetoothSocket.connect(): \n" + eMessage);
-                    }
-                });
-
                 try {
+                    bluetoothSocket = (BluetoothSocket) Device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(Device, 1);
+                    bluetoothSocket.connect();
+                    success = true;
+                    //Log.d(getClass().getSimpleName(), "Status of success: " + success);
+                } catch (Exception e2) {
+                    try {
+                        bluetoothSocket.close();
+                    } catch (IOException closeException) {
+                        Log.d(getClass().getSimpleName(), "Couldn't establish connection!");
+
+                    }
+
+                }
+
+/*                try {
                     bluetoothSocket.close();
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-            }
+            }*/
+                if (success) {
+                    //connect successful
+                    final String msgconnected = "connect successful:\n"
+                            + "BluetoothSocket: " + bluetoothSocket + "\n"
+                            + "BluetoothDevice: " + bluetoothDevice;
 
-            if(success){
-                //connect successful
-                final String msgconnected = "connect successful:\n"
-                        + "BluetoothSocket: " + bluetoothSocket + "\n"
-                        + "BluetoothDevice: " + bluetoothDevice;
+                    getActivity().runOnUiThread(new Runnable() {
 
-                getActivity().runOnUiThread(new Runnable(){
+                        @Override
+                        public void run() {
+                            Log.d(getClass().getSimpleName(), "Status : " + msgconnected);
 
-                    @Override
-                    public void run() {
-                        //textStatus.setText(msgconnected);
+                            //listViewPairedDevice.setVisibility(View.GONE);
+                            //inputPane.setVisibility(View.VISIBLE);
+                        }
+                    });
+                    Log.d(getClass().getSimpleName(), "startGraph: "+ startGraph);
 
-                        //listViewPairedDevice.setVisibility(View.GONE);
-                        //inputPane.setVisibility(View.VISIBLE);
-                    }});
-
-                startThreadConnected(bluetoothSocket);
-            }else{
-                //fail
+                    if(startGraph == true) {
+                        startThreadConnected(bluetoothSocket);
+                    }
+                } else {
+                    //fail
+                    try {
+                        bluetoothSocket.close();
+                    } catch (IOException closeException) {
+                        Log.d(getClass().getSimpleName(), "Failed connection!");
+                    }
+                }
             }
         }
 
@@ -277,6 +338,7 @@ public class Tab3 extends Fragment {
         }
 
     }
+
     /*
 ThreadConnected:
 Background Thread to handle Bluetooth data communication
@@ -295,9 +357,13 @@ after connected
             try {
                 in = socket.getInputStream();
                 out = socket.getOutputStream();
+                Log.d(getClass().getSimpleName(), "In out stream ran, socket: "+ socket);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                try {
+                    socket.close();
+                } catch (IOException closeException) {Log.d(getClass().getSimpleName(), "Failed connection2!"); }
             }
 
             connectedInputStream = in;
@@ -308,27 +374,90 @@ after connected
         public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
-
+            String trimString="0";
+            String newString;
             while (true) {
+                if (startGraph == true){
                 try {
-                    bytes = connectedInputStream.read(buffer);
-                    //String strReceived = new String(buffer, 0, bytes);
-                    final int msgReceived = bytes; //+
-                            //" bytes received:\n";
-                            //+ strReceived;
 
-                    getActivity().runOnUiThread(new Runnable(){
+                    bytes = connectedInputStream.read(buffer);
+                    Log.d(getClass().getSimpleName(), "connectedInputStream: "+ connectedInputStream);
+                    String strReceived = new String(buffer, 0, bytes);
+
+                    final String msgReceived = String.valueOf(bytes) +
+                            " bytes received:\n"
+                            + strReceived;
+                    Log.d(getClass().getSimpleName(), "msgReceived: "+ msgReceived);
+
+                    //int beginOfLineIndex =0;
+                    newString = strReceived;
+                    int count = strReceived.length() - strReceived.replace("\r\n", "").length();
+                    //Log.d(getClass().getSimpleName(), "count: "+ count);
+                    for(int i=0; i<count; i++) {
+
+                        int endOfLineIndex = newString.indexOf("\r\n");
+                        //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
+                        if (endOfLineIndex >0) {
+
+                            trimString = newString.substring(0,endOfLineIndex).trim();
+                            //Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
+                            try {
+                                double intvalue = Double.parseDouble(trimString);
+
+                                series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    // manage error ...
+                                }
+                            }
+                            catch (NumberFormatException nfe)
+                            {
+                                //your string not in numeric format
+                                Log.d(getClass().getSimpleName(), "String not numeric");
+                                nfe.printStackTrace();
+                            }
+                            newString = newString.substring(endOfLineIndex+1);
+                            //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
+                            //beginOfLineIndex = endOfLineIndex+1;
+                        }
+                        else if (endOfLineIndex == -1) {
+                            break;
+                        }
+
+                        /*if (startGraph == false) {
+                            break;
+                        }*/
+                    }
+                    //connectedInputStream = null;
+                    //connectedOutputStream =null;
+
+
+
+
+
+
+
+/*                    getActivity().runOnUiThread(new Runnable(){
 
                         @Override
                         public void run() {
                             Log.d(getClass().getSimpleName(), "reading bytes");
+                            String strIncom = new String(msgReceived, 0, 5);
+                            Log.d(getClass().getSimpleName(), "strIncom: "+strIncom);
+                            double intvalue = Double.parseDouble(strIncom);
+                            series.appendData(new DataPoint(lastX++,intvalue),true,50);
+
+
+
                             //series.appendData(new DataPoint(msgReceived), true, 50);
 
-                        }});
+                        }});*/
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    //e.printStackTrace();
 
                     final String msgConnectionLost = "Connection lost:\n"
                             + e.getMessage();
@@ -339,8 +468,10 @@ after connected
                             Log.d(getClass().getSimpleName(), msgConnectionLost);
 
                         }});
+                    onDestroy();
+                    break;
                 }
-            }
+            }}
         }
 
         public void write(byte[] buffer) {
