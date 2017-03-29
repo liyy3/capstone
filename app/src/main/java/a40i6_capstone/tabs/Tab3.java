@@ -42,6 +42,7 @@ import static a40i6_capstone.tabs.R.layout.tab3contents;
  */
 
 public class Tab3 extends Fragment {
+    int error_message = -6;
     boolean startGraph;
     public static final Random RANDOM = new Random();
     public LineGraphSeries<DataPoint> series;
@@ -90,6 +91,7 @@ public class Tab3 extends Fragment {
                         startstopmsg.setText("Device is now OFF");
                         view.setTag(0); //pause
                         startGraph = false;
+                        sendCancel();
                         break;
                 }
 
@@ -472,6 +474,14 @@ after connected
                     break;
                 }
             }}
+        }
+        
+        public void sendCancel(){
+         try{
+             connectedOutputStream.write(error_message);
+        } catch (IOException e) {
+          e.printStackTrace();   
+         }
         }
 
         public void write(byte[] buffer) {
