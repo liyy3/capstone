@@ -109,7 +109,7 @@ public class Tab3 extends Fragment {
         viewport.setMaxY(800);
         viewport.setXAxisBoundsManual(true);
         viewport.setMinX(0);
-        viewport.setMaxX(10);
+        viewport.setMaxX(100);
         viewport.setScrollable(true);
         viewport.setScalable(true);
 
@@ -403,14 +403,14 @@ after connected
                         if (endOfLineIndex >0) {
 
                             trimString = newString.substring(0,endOfLineIndex).trim();
-                            //Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
+                            Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
                             try {
                                 double intvalue = Double.parseDouble(trimString);
 
                                 series.appendData(new DataPoint(lastX++, intvalue), true, 50);
 
                                 try {
-                                    Thread.sleep(100);
+                                    Thread.sleep(25);
                                 } catch (InterruptedException e) {
                                     // manage error ...
                                 }
