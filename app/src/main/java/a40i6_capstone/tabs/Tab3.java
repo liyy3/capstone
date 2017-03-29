@@ -85,13 +85,14 @@ public class Tab3 extends Fragment {
                         startstopmsg.setText("Device is now ON");
                         view.setTag(1); //pause
                         startGraph = true;
+                        sendMessage();
                         break;
                     case 1:
                         ((Button) view).setText("Start");
                         startstopmsg.setText("Device is now OFF");
                         view.setTag(0); //pause
                         startGraph = false;
-                        sendCancel();
+                        sendMessage();
                         break;
                 }
 
@@ -476,7 +477,7 @@ after connected
             }}
         }
         
-        public void sendCancel(){
+        public void sendMessage(){
          try{
              connectedOutputStream.write(error_message);
         } catch (IOException e) {
