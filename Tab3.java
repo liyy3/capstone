@@ -42,7 +42,7 @@ import static a40i6_capstone.tabs.R.layout.tab3contents;
  */
 
 public class Tab3 extends Fragment {
-    int error_message = -6;
+	int error_message = -6;
     boolean startGraph;
     public static final Random RANDOM = new Random();
     public LineGraphSeries<DataPoint> series;
@@ -59,6 +59,8 @@ public class Tab3 extends Fragment {
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
 
+	
+	
     //Creating start/stop button to control data transfer
 
     @Override
@@ -85,14 +87,14 @@ public class Tab3 extends Fragment {
                         startstopmsg.setText("Device is now ON");
                         view.setTag(1); //pause
                         startGraph = true;
-                        sendMessage();
                         break;
                     case 1:
                         ((Button) view).setText("Start");
                         startstopmsg.setText("Device is now OFF");
                         view.setTag(0); //pause
                         startGraph = false;
-                        sendMessage();
+						//Sends cancellation code to the ARDUINO
+						sendCancel();
                         break;
                 }
 
@@ -109,7 +111,7 @@ public class Tab3 extends Fragment {
         viewport.setMaxY(800);
         viewport.setXAxisBoundsManual(true);
         viewport.setMinX(0);
-        viewport.setMaxX(100);
+        viewport.setMaxX(10);
         viewport.setScrollable(true);
         viewport.setScalable(true);
 
@@ -169,6 +171,8 @@ public class Tab3 extends Fragment {
                                     myThreadConnectBTdevice.start();
                                     Log.d(getClass().getSimpleName(), "Test");
                                     myThreadConnectBTdevice.cancel();
+									
+									
                                 }
                                 //} catch (IOException ex) { ex.printStackTrace();}
 
@@ -372,26 +376,15 @@ after connected
             connectedInputStream = in;
             connectedOutputStream = out;
         }
-
         @Override
         public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
-            int signal = 0;
-            int current_state = -1;
             String trimString="0";
             String newString;
             while (true) {
-                
                 if (startGraph == true){
-                    signal = -1;
-                    //A value of -1 tells the Arduino to start sending data, or to continue sending data.
-                    if(current_state!=-1){
-                        sendMessage(signal);
-                        current_state = -1;
-                    }
                 try {
-                    
 
                     bytes = connectedInputStream.read(buffer);
                     Log.d(getClass().getSimpleName(), "connectedInputStream: "+ connectedInputStream);
@@ -413,14 +406,14 @@ after connected
                         if (endOfLineIndex >0) {
 
                             trimString = newString.substring(0,endOfLineIndex).trim();
-                            Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
+                            //Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
                             try {
                                 double intvalue = Double.parseDouble(trimString);
 
                                 series.appendData(new DataPoint(lastX++, intvalue), true, 50);
 
                                 try {
-                                    Thread.sleep(25);
+                                    Thread.sleep(100);
                                 } catch (InterruptedException e) {
                                     // manage error ...
                                 }
@@ -484,25 +477,19 @@ after connected
                     onDestroy();
                     break;
                 }
-            } else {
-                    //This tells the Arduino to either stop sending data, or to continue NOT sending data.
-                    signal = -5;
-
-                    if(current_state != -5){
-                        sendMessage(signal);
-                        current_state = -5;
-                    }
-                }
-            }
+            }}
         }
-        
-        public void sendMessage(){
-         try{
-             connectedOutputStream.write(error_message);
-        } catch (IOException e) {
-          e.printStackTrace();   
-         }
-        }
+		
+		//Send data to the ARDUINO to cancel the transmission
+		public void sendCancel(){
+			
+			try{
+				connectedOutputStream.write(error_message);
+			} catch (IOException e){
+				e.printStackTrace();
+			}
+			
+		}
 
         public void write(byte[] buffer) {
             try {
@@ -512,7 +499,6 @@ after connected
                 e.printStackTrace();
             }
         }
-
         public void cancel() {
             try {
                 connectedBluetoothSocket.close();
@@ -580,6 +566,3 @@ after connected
 
         workerThread.start();
     }*/
-
-
-
