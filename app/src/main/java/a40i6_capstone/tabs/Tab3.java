@@ -374,11 +374,21 @@ after connected
         public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
+            int signal = 0;
+            int current_state = -1;
             String trimString="0";
             String newString;
             while (true) {
+                
                 if (startGraph == true){
+                    signal = -1;
+                    //A value of -1 tells the Arduino to start sending data, or to continue sending data.
+                    if(current_state!=-1){
+                        sendMessage(signal);
+                        current_state = -1;
+                    }
                 try {
+                    
 
                     bytes = connectedInputStream.read(buffer);
                     Log.d(getClass().getSimpleName(), "connectedInputStream: "+ connectedInputStream);
@@ -471,7 +481,16 @@ after connected
                     onDestroy();
                     break;
                 }
-            }}
+            } else {
+                    //This tells the Arduino to either stop sending data, or to continue NOT sending data.
+                    signal = -5;
+
+                    if(current_state != -5){
+                        sendMessage(signal);
+                        current_state = -5;
+                    }
+                }
+            }
         }
 
         public void write(byte[] buffer) {
