@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
@@ -182,7 +183,16 @@ public class Tab3 extends Fragment {
 
                         // sleep to slow down the add of entries
                         try {
-                            Thread.sleep(600);
+                            //originally 600
+                            Thread.sleep(100);
+                            //new CountDownTimer(600,100){
+                                //public void onTick(long millisUntilFinished){
+
+                                //}
+                                //public void onFinish(){
+
+                                //}
+                            //}.start();
                         } catch (InterruptedException e) {
                             // manage error ...
 
@@ -357,6 +367,8 @@ after connected
             InputStream in = null;
             OutputStream out = null;
 
+
+
             try {
                 in = socket.getInputStream();
                 out = socket.getOutputStream();
@@ -375,74 +387,201 @@ after connected
 
         @Override
         public void run() {
-            byte[] buffer = new byte[1024];
+            //orginally 1024
+            byte[] buffer = new byte[16];
             int bytes;
             char signal;
+            int graphTrack;
             int current_state = -1;
-            String trimString="0";
+            String trimString = "0";
             String newString;
             while (true) {
-                if (startGraph == true){
+
+                if (startGraph) {
+                    graphTrack = 1;
                     signal = 'A';
-                    //A value of -1 tells the Arduino to start sending data, or to continue sending data.
-                    if(current_state!=-1){
+                    if (current_state != -1) {
                         sendMessage(signal);
                         current_state = -1;
-                        Log.d(getClass().getSimpleName(), "Transmission success start: "+ signal);
+                        Log.d(getClass().getSimpleName(), "Transmission success start: " + signal);
+
                     }
-                try {
+                } else {
+                    graphTrack = 2;
+                    signal = 'B';
+                    if (current_state != -5) {
+                        sendMessage(signal);
+                        current_state = -5;
+                        Log.d(getClass().getSimpleName(), "Transmission success end: " + signal);
+
+                    }
+                }
+                switch (graphTrack) {
+                    case 1:
+                        try {
+
+                            buffer = new byte[16];
+                            bytes = connectedInputStream.read(buffer);
 
 
 
-                    bytes = connectedInputStream.read(buffer);
-                    Log.d(getClass().getSimpleName(), "connectedInputStream: "+ connectedInputStream);
-                    String strReceived = new String(buffer, 0, bytes);
+                            Log.d(getClass().getSimpleName(), "connectedInputStream: " + connectedInputStream);
+                            String strReceived = new String(buffer, 0, bytes);
+                            buffer = null;
 
-                    final String msgReceived = String.valueOf(bytes) +
-                            " bytes received:\n"
-                            + strReceived;
-                    Log.d(getClass().getSimpleName(), "msgReceived: "+ msgReceived);
+                            final String msgReceived = String.valueOf(bytes) +
+                                    " bytes received:\n"
+                                    + strReceived;
+                            Log.d(getClass().getSimpleName(), "msgReceived: " + msgReceived);
 
-                    //int beginOfLineIndex =0;
-                    newString = strReceived;
-                    int count = strReceived.length() - strReceived.replace("\r\n", "").length();
-                    //Log.d(getClass().getSimpleName(), "count: "+ count);
-                    for(int i=0; i<count; i++) {
+                            //int beginOfLineIndex =0;
+                            newString = strReceived;
+                            int count = strReceived.length() - strReceived.replace("\r\n", "").length();
+                            //Log.d(getClass().getSimpleName(), "count: "+ count);
+                            for (int i = 0; i < count; i++) {
 
-                        int endOfLineIndex = newString.indexOf("\r\n");
-                        //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
-                        if (endOfLineIndex >0) {
+                                int endOfLineIndex = newString.indexOf("\r\n");
+                                //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
+                                if (endOfLineIndex > 0) {
 
-                            trimString = newString.substring(0,endOfLineIndex).trim();
-                            Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
-                            try {
-                                double intvalue = Double.parseDouble(trimString);
+                                    trimString = newString.substring(0, endOfLineIndex).trim();
+                                    Log.d(getClass().getSimpleName(), "trimString: " + trimString);
+                                    try {
 
-                                series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                        double intvalue = Double.parseDouble(trimString);
+                                            //if(i%100 == 0){
 
-                                try {
-                                    Thread.sleep(25);
-                                } catch (InterruptedException e) {
-                                    // manage error ...
+                                                series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                            //}
+
+                                            Log.d(getClass().getSimpleName(), "I am working");
+
+
+
+                                        try {
+                                            Thread.sleep(50);
+                                        } catch (InterruptedException e) {
+                                            // manage error ...
+                                        }
+                                    } catch (NumberFormatException nfe) {
+                                        //your string not in numeric format
+                                        Log.d(getClass().getSimpleName(), "String not numeric");
+                                        nfe.printStackTrace();
+                                    }
+                                    newString = newString.substring(endOfLineIndex + 1);
+                                    //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
+                                    //beginOfLineIndex = endOfLineIndex+1;
+                                } else if (endOfLineIndex == -1) {
+                                    break;
                                 }
-                            }
-                            catch (NumberFormatException nfe)
-                            {
-                                //your string not in numeric format
-                                Log.d(getClass().getSimpleName(), "String not numeric");
-                                nfe.printStackTrace();
-                            }
-                            newString = newString.substring(endOfLineIndex+1);
-                            //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
-                            //beginOfLineIndex = endOfLineIndex+1;
-                        }
-                        else if (endOfLineIndex == -1) {
-                            break;
-                        }
 
                         /*if (startGraph == false) {
                             break;
                         }*/
+                            }
+                            //connectedInputStream = null;
+                            //connectedOutputStream =null;
+
+
+
+
+
+
+
+/*                    getActivity().runOnUiThread(new Runnable(){
+
+                        @Override
+                        public void run() {
+                            Log.d(getClass().getSimpleName(), "reading bytes");
+                            String strIncom = new String(msgReceived, 0, 5);
+                            Log.d(getClass().getSimpleName(), "strIncom: "+strIncom);
+                            double intvalue = Double.parseDouble(strIncom);
+                            series.appendData(new DataPoint(lastX++,intvalue),true,50);
+
+
+
+                            //series.appendData(new DataPoint(msgReceived), true, 50);
+
+                        }});*/
+
+
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            //e.printStackTrace();
+
+                            final String msgConnectionLost = "Connection lost:\n"
+                                    + e.getMessage();
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    Log.d(getClass().getSimpleName(), msgConnectionLost);
+
+                                }
+                            });
+                            onDestroy();
+                            break;
+                        }
+                        break;
+
+                    case 2:
+
+                        break;
+                }
+
+               // if (startGraph == true) {
+
+                    //A value of -1 tells the Arduino to start sending data, or to continue sending data.
+
+                    /*try {
+
+
+                        bytes = connectedInputStream.read(buffer);
+                        Log.d(getClass().getSimpleName(), "connectedInputStream: " + connectedInputStream);
+                        String strReceived = new String(buffer, 0, bytes);
+
+                        final String msgReceived = String.valueOf(bytes) +
+                                " bytes received:\n"
+                                + strReceived;
+                        Log.d(getClass().getSimpleName(), "msgReceived: " + msgReceived);
+
+                        //int beginOfLineIndex =0;
+                        newString = strReceived;
+                        int count = strReceived.length() - strReceived.replace("\r\n", "").length();
+                        //Log.d(getClass().getSimpleName(), "count: "+ count);
+                        for (int i = 0; i < count; i++) {
+
+                            int endOfLineIndex = newString.indexOf("\r\n");
+                            //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
+                            if (endOfLineIndex > 0) {
+
+                                trimString = newString.substring(0, endOfLineIndex).trim();
+                                Log.d(getClass().getSimpleName(), "trimString: " + trimString);
+                                try {
+                                    double intvalue = Double.parseDouble(trimString);
+
+                                    series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+
+                                    try {
+                                        Thread.sleep(75);
+                                    } catch (InterruptedException e) {
+                                        // manage error ...
+                                    }
+                                } catch (NumberFormatException nfe) {
+                                    //your string not in numeric format
+                                    Log.d(getClass().getSimpleName(), "String not numeric");
+                                    nfe.printStackTrace();
+                                }
+                                newString = newString.substring(endOfLineIndex + 1);
+                                //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
+                                //beginOfLineIndex = endOfLineIndex+1;
+                            } else if (endOfLineIndex == -1) {
+                                break;
+                            }*/
+
+                        /*if (startGraph == false) {
+                            break;
+                        }
                     }
                     //connectedInputStream = null;
                     //connectedOutputStream =null;
@@ -469,35 +608,27 @@ after connected
 
                         }});*/
 
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    //e.printStackTrace();
+                       /* } catch(IOException e){
+                            // TODO Auto-generated catch block
+                            //e.printStackTrace();
 
-                    final String msgConnectionLost = "Connection lost:\n"
-                            + e.getMessage();
-                    getActivity().runOnUiThread(new Runnable(){
+                            final String msgConnectionLost = "Connection lost:\n"
+                                    + e.getMessage();
+                            getActivity().runOnUiThread(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            Log.d(getClass().getSimpleName(), msgConnectionLost);
+                                @Override
+                                public void run() {
+                                    Log.d(getClass().getSimpleName(), msgConnectionLost);
 
-                        }});
-                    onDestroy();
-                    break;
-                }
-            } else {
-                    //This tells the Arduino to either stop sending data, or to continue NOT sending data.
-                    signal = 'B';
-
-                    if(current_state != -5){
-                        sendMessage(signal);
-                        current_state = -5;
-                        Log.d(getClass().getSimpleName(), "Transmission success stop: "+ signal);
-                    }
-                }
+                                }
+                            });
+                            onDestroy();
+                            break;
+                        }
+                    }*/
+                //}
             }
         }
-        
         public void sendMessage(char status_code){
          try{
              connectedOutputStream.write(status_code);
@@ -505,6 +636,10 @@ after connected
           e.printStackTrace();   
          }
         }
+        public BluetoothSocket getSocket(){
+            return this.connectedBluetoothSocket;
+        }
+
 
         public void write(byte[] buffer) {
             try {
@@ -582,6 +717,8 @@ after connected
 
         workerThread.start();
     }*/
+
+
 
 
 
