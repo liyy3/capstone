@@ -1,9 +1,25 @@
 package a40i6_capstone.tabs;
 
+import android.*;
+import android.Manifest;
+import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.net.Uri;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -22,6 +38,21 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static int input;
+    private static final int uniqueID = 3456;
+    //Context TabContext;
+
+    private static final int REQUEST_PHONE_CALL = 1;
+
+    //public String number;
+    public String no;
+    private static int flag1=0;
+    static  DialogInterface dialog1;
+
+
+
+
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -64,6 +95,102 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+
+
+    }
+
+    public void  showNotification(View v)
+    {
+
+        AlertDialog.Builder builder= new AlertDialog.Builder(MainActivity.this);
+        builder.setCancelable(true);
+
+        builder.setTitle("Your ECG readings indicate there is an Emergency");
+        builder.setMessage("Would You like to call Emergency Services?");
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int whichButton) {
+            flag1=1;
+            dialog.cancel();
+            }
+        });
+
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener(){
+            public void onClick (DialogInterface dialog, int which){
+                flag1=1;
+                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                //number = Tab4().Number1.getText().toString();
+                no = "tel:" + "6478958608";
+
+                callIntent.setData(Uri.parse(no));
+
+                //Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "6477808035"));
+
+                if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_PHONE_CALL);
+                } else {
+                    startActivity(callIntent);
+                }
+
+            }
+        });
+
+        final long TOTAL_TIME = 5000; // miliseconds
+
+
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (flag1==0){
+
+
+                    Intent callIntent = new Intent(Intent.ACTION_CALL);
+                    //number = Tab4().Number1.getText().toString();
+                    no = "tel:" + "6478958608";
+
+                    callIntent.setData(Uri.parse(no));
+
+                    //Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "6477808035"));
+
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_PHONE_CALL);
+                    } else {
+                        startActivity(callIntent);
+                    }
+                } //dialog1.cancel();
+            }
+        }, TOTAL_TIME);
+
+        builder.show();
+
+           // @Override
+            //public void onClick(DialogInterface dialog, int which) {
+
+            //}
+        //})
+        /*
+        //Initialize the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setAutoCancel(true);
+
+        //Build the notification
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setTicker("T-Heart");
+        builder.setWhen(System.currentTimeMillis());
+        builder.setContentTitle("T-Heart Application");
+        builder.setContentText("Are You Feeling okay? ");
+
+
+        Intent intent = new Intent (this, Tab4.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+
+        //Builds notification and issues it
+        NotificationManager NM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NM.notify(uniqueID,builder.build());*/
+
 
     }
 
@@ -124,6 +251,28 @@ public class MainActivity extends AppCompatActivity {
 //            return rootView;
 //        }
 //    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PHONE_CALL: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent callIntent = new Intent(Intent.ACTION_CALL);
+                    callIntent.setData(Uri.parse(no));
+
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                        startActivity(callIntent);
+                    } else {
+
+                    }
+                    return;
+                }
+            }
+        }
+
+
+    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to

@@ -24,10 +24,14 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -58,6 +62,8 @@ public class Tab3 extends Fragment {
     //Thread workerThread;
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
+    public static double values;
+    public static double[] doublevalue = new double[4972];
 
     //Creating start/stop button to control data transfer
 
@@ -85,14 +91,14 @@ public class Tab3 extends Fragment {
                         startstopmsg.setText("Device is now ON");
                         view.setTag(1); //pause
                         startGraph = true;
-                        sendMessage();
+                      //  sendMessage();
                         break;
                     case 1:
                         ((Button) view).setText("Start");
                         startstopmsg.setText("Device is now OFF");
                         view.setTag(0); //pause
                         startGraph = false;
-                        sendMessage();
+                      //  sendMessage();
                         break;
                 }
 
@@ -100,6 +106,7 @@ public class Tab3 extends Fragment {
         });
 
         // data
+        readFromFile();
         series = new LineGraphSeries<DataPoint>();
         graph.addSeries(series);
         // customize a little bit viewport
@@ -146,6 +153,8 @@ public class Tab3 extends Fragment {
 
         return rootView;
     }
+
+
     @Override
     public void onResume() {
         super.onResume();
@@ -347,7 +356,7 @@ ThreadConnected:
 Background Thread to handle Bluetooth data communication
 after connected
  */
-    private class ThreadConnected extends Thread {
+    public class ThreadConnected extends Thread {
         private final BluetoothSocket connectedBluetoothSocket;
         private final InputStream connectedInputStream;
         private final OutputStream connectedOutputStream;
@@ -406,7 +415,7 @@ after connected
                             Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
                             try {
                                 double intvalue = Double.parseDouble(trimString);
-
+                                values = intvalue;
                                 series.appendData(new DataPoint(lastX++, intvalue), true, 50);
 
                                 try {
@@ -502,6 +511,61 @@ after connected
                 e.printStackTrace();
             }
         }
+    }
+
+    public ArrayList<String> readFromFile() {
+
+
+        ArrayList<String> stringArray = new ArrayList<String>();
+        DataPath var = new DataPath();
+        int i = 0;
+
+
+        try {
+
+            //InputStream inputStream = getContext().openFileInput("text2abnormal.txt");
+            InputStream inputStream = this.getResources().openRawResource(R.raw.test);
+
+
+
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                //StringBuilder stringBuilder = new StringBuilder();
+
+
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+
+                    //stringBuilder.append(receiveString);
+
+                    stringArray.add(i, receiveString);
+                    doublevalue[i] = Double.parseDouble(stringArray.get(i));
+                    //Log.d(getClass().getSimpleName(), "Input: "+ doublevalue[i]+ i);
+
+                    i++;
+
+
+                    //if ()
+                }
+
+                inputStream.close();
+                //ret = stringBuilder.toString();
+            }
+        }
+        catch (FileNotFoundException e) {
+            Log.e("login activity", "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("login activity", "Can not read file: " + e.toString());
+        }
+
+        for (int a=0;a<i;a++) {
+            var.DecisionMaking(doublevalue[a]);
+
+        }
+
+        return stringArray;
     }
 
 }

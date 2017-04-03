@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,6 +32,8 @@ import static android.R.id.content;
 
 public class Tab4 extends Fragment {
 
+    public static final String PREFS_NAME = "mypref";
+
     private EditText Name1;
     private EditText Relationship1;
     private EditText Number1;
@@ -44,6 +48,8 @@ public class Tab4 extends Fragment {
 
     public String number;
     public String no;
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,6 +99,7 @@ public class Tab4 extends Fragment {
 
         return rootView;
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
