@@ -5,7 +5,14 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.NotificationCompat;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.Math;
+import java.util.ArrayList;
 
 import android.util.Log;
 
@@ -17,17 +24,18 @@ public class DataPath extends Tab3 {
 
     Tab3 obj = new Tab3();
     double dummy = obj.values;
-    double min_incoming=0, min_baseline=0;
+    static double min_incoming=0, min_baseline=0;
 
     MainActivity object = new MainActivity();
     double incoming_data_numbers = object.input;
 
-    int start_flag =0; //this flag is used to know the very first time so you can get a baseline
-    int emergency_flag=0;
-    int j=0, k=0;
-    int index_baseline=0, index_incoming=0;
+    static int start_flag =0; //this flag is used to know the very first time so you can get a baseline
+    static int emergency_flag=0;
+    static int j=0, k=0;
+    static int index_baseline=0, index_incoming=0;
 
-    public void DecisionMaking (double numbersFromBluetooth){
+
+    public static void DecisionMaking (double numbersFromBluetooth[]){
         int i=0;
         int range=0; //to be changed\
         int m=0;
@@ -39,10 +47,13 @@ public class DataPath extends Tab3 {
         int emergency=0;
 
 
+
+
         if (start_flag == 0){
            // Log.d(getClass().getSimpleName(), "start flag ==0");
             for (i=0; i<160; i++){
-                baseline[i] = numbersFromBluetooth;
+                baseline[i] = numbersFromBluetooth[i];
+                //Log.d(getClass().getSimpleName(),"baseline is "+baseline[i]);
 
                 if (i==80) {
                     min_baseline = incoming_data[i];
@@ -62,11 +73,11 @@ public class DataPath extends Tab3 {
         } else {
 
             for (i = 0; i < 160; i++) {
-                incoming_data[i] = numbersFromBluetooth;
+                incoming_data[i] = numbersFromBluetooth[i];
 
                 // if data ok baseline[i] = (0.2 * incoming_data[i] + 0.8 * baseline[i]);
                 //if off : emergency_flag++;
-
+                //Log.d(getClass().getSimpleName(),"incoming data of i "+incoming_data[i]);
                 //finding minimum
                 if (i==80) {
                     min_incoming = incoming_data[i];
@@ -74,11 +85,14 @@ public class DataPath extends Tab3 {
                     if (incoming_data[i]<min_incoming) {
                         min_incoming = incoming_data[i];
                         index_incoming=i;
+                        //
+                        // Log.d(getClass().getSimpleName(),"i"+i);
+
                     }
                 } else if (i>=90 && k<24 ){// to ensure that minimum has been inserted (i>90) and that we don't overwrite once ST array is full.. Creating ST Array
 
                     ST_incoming[k] = incoming_data[index_incoming + counter1];
-                    Log.d(getClass().getSimpleName(),"ST_Incoming is "+ ST_incoming[k]);
+                    //Log.d(getClass().getSimpleName(),"ST_Incoming is "+ ST_incoming[k]);
                     counter1++;
                     k++;
                 }

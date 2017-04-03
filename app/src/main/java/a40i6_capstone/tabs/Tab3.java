@@ -63,7 +63,9 @@ public class Tab3 extends Fragment {
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
     public static double values;
-    public static double[] doublevalue = new double[4972];
+    public static double[] doublevalue = new double[160];
+    final Handler handler = new Handler();
+    int i = 0;
 
     //Creating start/stop button to control data transfer
 
@@ -518,17 +520,17 @@ after connected
 
         ArrayList<String> stringArray = new ArrayList<String>();
         DataPath var = new DataPath();
-        int i = 0;
+
 
 
         try {
 
             //InputStream inputStream = getContext().openFileInput("text2abnormal.txt");
-            InputStream inputStream = this.getResources().openRawResource(R.raw.test);
+            InputStream inputStream = this.getResources().openRawResource(R.raw.test4);
 
 
 
-            if ( inputStream != null ) {
+            while ( inputStream != null ) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 String receiveString = "";
@@ -536,20 +538,41 @@ after connected
 
 
 
-                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                while ( (receiveString = bufferedReader.readLine()) != "-10" ) {
 
                     //stringBuilder.append(receiveString);
+                    //for (i=0; i<160; i++) {
 
-                    stringArray.add(i, receiveString);
-                    doublevalue[i] = Double.parseDouble(stringArray.get(i));
-                    //Log.d(getClass().getSimpleName(), "Input: "+ doublevalue[i]+ i);
+                        stringArray.add(i, receiveString);
+                        doublevalue[i] = Double.parseDouble(stringArray.get(i));
+                        Log.d(getClass().getSimpleName(), "Input: " + doublevalue[i] + i);
 
-                    i++;
+                       i++;
+
+                    //Log.d(getClass().getSimpleName(), "before entering the delay");
+
+                       // DataPath.DecisionMaking(doublevalue);
+
+                   /* handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                                // Do something after 5s = 5000ms
+                               // i=0;
+                            Log.d(getClass().getSimpleName(), "5 seconds delay over "+i);
+                        }
+                    }, 5000);*/
+
+
 
 
                     //if ()
+                    if (i==160){
+                        i=0;
+                    }
+
                 }
 
+               // i=0;
                 inputStream.close();
                 //ret = stringBuilder.toString();
             }
@@ -560,10 +583,10 @@ after connected
             Log.e("login activity", "Can not read file: " + e.toString());
         }
 
-        for (int a=0;a<i;a++) {
+        /*for (int a=0;a<i;a++) {
             var.DecisionMaking(doublevalue[a]);
-
-        }
+            //Log.d(getClass().getSimpleName(), "Passed value: "+ doublevalue[a]+ a);
+        }*/
 
         return stringArray;
     }
