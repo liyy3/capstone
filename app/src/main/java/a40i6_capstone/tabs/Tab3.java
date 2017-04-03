@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.renderscript.ScriptGroup;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,7 +65,9 @@ public class Tab3 extends Fragment {
     ThreadConnected myThreadConnected;
     public static double values;
     public static double[] doublevalue = new double[160];
-    final Handler handler = new Handler();
+    public static double[] inputarray = new double[160];
+    public static DataPath sendArray = new DataPath();
+
     int i = 0;
 
     //Creating start/stop button to control data transfer
@@ -108,7 +111,7 @@ public class Tab3 extends Fragment {
         });
 
         // data
-        readFromFile();
+        //readFromFile();
         series = new LineGraphSeries<DataPoint>();
         graph.addSeries(series);
         // customize a little bit viewport
@@ -390,6 +393,8 @@ after connected
             int bytes;
             String trimString="0";
             String newString;
+            int m =0;
+
             while (true) {
                 if (startGraph == true){
                 try {
@@ -407,6 +412,7 @@ after connected
                     newString = strReceived;
                     int count = strReceived.length() - strReceived.replace("\r\n", "").length();
                     //Log.d(getClass().getSimpleName(), "count: "+ count);
+
                     for(int i=0; i<count; i++) {
 
                         int endOfLineIndex = newString.indexOf("\r\n");
@@ -418,10 +424,18 @@ after connected
                             try {
                                 double intvalue = Double.parseDouble(trimString);
                                 values = intvalue;
-                                series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                if (intvalue != (double) -10){
+                                    series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                    inputarray[m] = intvalue;
+                                    m++;
+                                }
+
+                                else if (intvalue == (double)-10) {
+                                    //do nothing
+                                }
 
                                 try {
-                                    Thread.sleep(25);
+                                    Thread.sleep(75);
                                 } catch (InterruptedException e) {
                                     // manage error ...
                                 }
@@ -433,8 +447,10 @@ after connected
                                 nfe.printStackTrace();
                             }
                             newString = newString.substring(endOfLineIndex+1);
-                            //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
-                            //beginOfLineIndex = endOfLineIndex+1;
+                            if (m==160) {
+                                sendArray.DecisionMaking(inputarray);
+                                m=0;
+                            }
                         }
                         else if (endOfLineIndex == -1) {
                             break;
@@ -536,19 +552,22 @@ after connected
                 String receiveString = "";
                 //StringBuilder stringBuilder = new StringBuilder();
 
+                Log.d(getClass().getSimpleName(), "test");
 
 
-                while ( (receiveString = bufferedReader.readLine()) != "-10" ) {
+                i=0;
+                receiveString = bufferedReader.readLine();
+                while (receiveString != "-10") {
 
                     //stringBuilder.append(receiveString);
-                    //for (i=0; i<160; i++) {
+                    if (i<160 && receiveString != null) {
 
                         stringArray.add(i, receiveString);
                         doublevalue[i] = Double.parseDouble(stringArray.get(i));
                         Log.d(getClass().getSimpleName(), "Input: " + doublevalue[i] + i);
 
-                       i++;
-
+                        i++;
+                    }
                     //Log.d(getClass().getSimpleName(), "before entering the delay");
 
                        // DataPath.DecisionMaking(doublevalue);
@@ -561,21 +580,20 @@ after connected
                             Log.d(getClass().getSimpleName(), "5 seconds delay over "+i);
                         }
                     }, 5000);*/
-
-
-
-
-                    //if ()
-                    if (i==160){
-                        i=0;
+                    else {
+                        break;
                     }
 
                 }
 
                // i=0;
-                inputStream.close();
+                Log.d(getClass().getSimpleName(), "Inputstream: "+ InputStream);
+
+
                 //ret = stringBuilder.toString();
             }
+
+            inputStream.close();
         }
         catch (FileNotFoundException e) {
             Log.e("login activity", "File not found: " + e.toString());

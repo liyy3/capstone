@@ -209,9 +209,10 @@ public class DataPath extends Tab3 {
 
         } //Log.d(getClass().getSimpleName(), "emergency should be 24 or more"+ emergency);
 
-      //  if (emergency_flag>1){
-        //    MainActivity.showNotification();
-        //}
+        if (emergency_flag>1){
+            Log.d(DataPath.class.getSimpleName(), "emergency should be 24 or more"+ emergency);
+            //MainActivity.showNotification();
+        }
     }
 
 
