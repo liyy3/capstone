@@ -64,9 +64,12 @@ public class Tab3 extends Fragment {
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
     public static double values;
-    public static double[] doublevalue = new double[160];
+    public static double[] doublevalue = new double[161];
     public static double[] inputarray = new double[160];
     public static DataPath sendArray = new DataPath();
+    View rootView;
+    MainActivity mActivity = new MainActivity();
+    int emergency_flag=0;
 
     int i = 0;
 
@@ -75,7 +78,7 @@ public class Tab3 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(tab3contents, container, false);
+        rootView = inflater.inflate(tab3contents, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.tab3text);
         // we get graph view instance
         GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
@@ -111,7 +114,7 @@ public class Tab3 extends Fragment {
         });
 
         // data
-        //readFromFile();
+        readFromFile();
         series = new LineGraphSeries<DataPoint>();
         graph.addSeries(series);
         // customize a little bit viewport
@@ -391,77 +394,143 @@ after connected
         public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
+            char signal;
+            int graphTrack;
+            int current_state = -1;
             String trimString="0";
             String newString;
             int m =0;
 
             while (true) {
-                if (startGraph == true){
-                try {
 
-                    bytes = connectedInputStream.read(buffer);
-                    Log.d(getClass().getSimpleName(), "connectedInputStream: "+ connectedInputStream);
-                    String strReceived = new String(buffer, 0, bytes);
 
-                    final String msgReceived = String.valueOf(bytes) +
-                            " bytes received:\n"
-                            + strReceived;
-                    Log.d(getClass().getSimpleName(), "msgReceived: "+ msgReceived);
+                    if (startGraph) {
+                        graphTrack = 1;
+                        signal = 'A';
+                        if (current_state != -1) {
+                            sendMessage(signal);
+                            current_state = -1;
+                            Log.d(getClass().getSimpleName(), "Transmission success start: " + signal);
 
-                    //int beginOfLineIndex =0;
-                    newString = strReceived;
-                    int count = strReceived.length() - strReceived.replace("\r\n", "").length();
-                    //Log.d(getClass().getSimpleName(), "count: "+ count);
-
-                    for(int i=0; i<count; i++) {
-
-                        int endOfLineIndex = newString.indexOf("\r\n");
-                        //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
-                        if (endOfLineIndex >0) {
-
-                            trimString = newString.substring(0,endOfLineIndex).trim();
-                            Log.d(getClass().getSimpleName(), "trimString: "+ trimString);
-                            try {
-                                double intvalue = Double.parseDouble(trimString);
-                                values = intvalue;
-                                if (intvalue != (double) -10){
-                                    series.appendData(new DataPoint(lastX++, intvalue), true, 50);
-                                    inputarray[m] = intvalue;
-                                    m++;
-                                }
-
-                                else if (intvalue == (double)-10) {
-                                    //do nothing
-                                }
-
-                                try {
-                                    Thread.sleep(75);
-                                } catch (InterruptedException e) {
-                                    // manage error ...
-                                }
-                            }
-                            catch (NumberFormatException nfe)
-                            {
-                                //your string not in numeric format
-                                Log.d(getClass().getSimpleName(), "String not numeric");
-                                nfe.printStackTrace();
-                            }
-                            newString = newString.substring(endOfLineIndex+1);
-                            if (m==160) {
-                                sendArray.DecisionMaking(inputarray);
-                                m=0;
-                            }
                         }
-                        else if (endOfLineIndex == -1) {
-                            break;
-                        }
+                    } else {
+                        graphTrack = 2;
+                        signal = 'B';
+                        if (current_state != -5) {
+                            sendMessage(signal);
+                            current_state = -5;
+                            Log.d(getClass().getSimpleName(), "Transmission success end: " + signal);
 
-                        /*if (startGraph == false) {
-                            break;
-                        }*/
+                        }
                     }
-                    //connectedInputStream = null;
-                    //connectedOutputStream =null;
+                    switch (graphTrack) {
+                        case 1:
+                            try {
+
+                                buffer = new byte[1024];
+                                bytes = connectedInputStream.read(buffer);
+                                Log.d(getClass().getSimpleName(), "connectedInputStream: " + connectedInputStream);
+                                String strReceived = new String(buffer, 0, bytes);
+                                buffer = null;
+                                final String msgReceived = String.valueOf(bytes) +
+                                        " bytes received:\n"
+                                        + strReceived;
+                                Log.d(getClass().getSimpleName(), "msgReceived: " + msgReceived);
+                                newString = strReceived;
+                                int count = strReceived.length() - strReceived.replace("\r\n", "").length();
+                                //Log.d(getClass().getSimpleName(), "count: "+ count);
+                                for (int i = 0; i < count; i++) {
+                                    int endOfLineIndex = newString.indexOf("\r\n");
+                                    //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
+                                    if (endOfLineIndex > 0) {
+                                        trimString = newString.substring(0, endOfLineIndex).trim();
+                                        Log.d(getClass().getSimpleName(), "trimString: " + trimString);
+                                        try {
+
+                                            double intvalue = Double.parseDouble(trimString);
+                                            values = intvalue;
+                                            if (values == -10){
+                                                emergency_flag++;
+                                            } else if (emergency_flag == 3){
+                                                mActivity.showNotification();
+                                            }
+                                            //if(i%100 == 0){
+
+                                            series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                            //}
+                                            Log.d(getClass().getSimpleName(), "I am working");
+                                            try {
+                                                Thread.sleep(50);
+                                            } catch (InterruptedException e) {
+                                                // manage error ...
+                                            }
+                                        } catch (NumberFormatException nfe) {
+                                            //your string not in numeric format
+                                            Log.d(getClass().getSimpleName(), "String not numeric");
+                                            nfe.printStackTrace();
+                                        }
+                                        newString = newString.substring(endOfLineIndex + 1);
+                                        //Log.d(getClass().getSimpleName(), "length of newString: "+ newString.length());
+                                        //beginOfLineIndex = endOfLineIndex+1;
+                                    } else if (endOfLineIndex == -1) {
+                                        break;
+                                    }
+                                            /*if (startGraph == false) {
+                                            break;
+                                            }*/
+
+                                }
+
+
+                                //int beginOfLineIndex =0;
+                                /*newString = strReceived;
+                                int count = strReceived.length() - strReceived.replace("\r\n", "").length();
+                                //Log.d(getClass().getSimpleName(), "count: "+ count);
+
+                                for (int i = 0; i < count; i++) {
+
+                                    int endOfLineIndex = newString.indexOf("\r\n");
+                                    //Log.d(getClass().getSimpleName(), "endofLineindex: "+ endOfLineIndex);
+                                    if (endOfLineIndex > 0) {
+
+                                        trimString = newString.substring(0, endOfLineIndex).trim();
+                                        Log.d(getClass().getSimpleName(), "trimString: " + trimString);
+                                        try {
+                                            double intvalue = Double.parseDouble(trimString);
+                                            values = intvalue;
+                                            if (intvalue != (double) -10) {
+                                                series.appendData(new DataPoint(lastX++, intvalue), true, 50);
+                                                inputarray[m] = intvalue;
+                                                m++;
+                                            } else if (intvalue == (double) -10) {
+                                                //do nothing
+                                            }
+
+                                            try {
+                                                Thread.sleep(75);
+                                            } catch (InterruptedException e) {
+                                                // manage error ...
+                                            }
+                                        } catch (NumberFormatException nfe) {
+                                            //your string not in numeric format
+                                            Log.d(getClass().getSimpleName(), "String not numeric");
+                                            nfe.printStackTrace();
+                                        }
+                                        newString = newString.substring(endOfLineIndex + 1);
+                                        if (m == 160) {
+                                            sendArray.DecisionMaking(inputarray);
+                                            m = 0;
+                                        }
+                                    } else if (endOfLineIndex == -1) {
+                                        break;
+                                    }
+
+                        *//*if (startGraph == false) {
+                            break;
+                        }*//*
+                                }*/
+                                //connectedInputStream = null;
+                                //connectedOutputStream =null;
 
 
 
@@ -484,53 +553,38 @@ after connected
                             //series.appendData(new DataPoint(msgReceived), true, 50);
 
                         }});*/
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                //e.printStackTrace();
 
+                                final String msgConnectionLost = "Connection lost:\n"
+                                        + e.getMessage();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.d(getClass().getSimpleName(), msgConnectionLost);
+                                    }
+                                });
+                                onDestroy();
+                                break;
+                            }
+                            break;
+                        case 2:
+                            break;
+                    }
+
+                    }
+                 }
+        public void sendMessage(char status_code){
+            try{
+                connectedOutputStream.write(status_code);
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    //e.printStackTrace();
-
-                    final String msgConnectionLost = "Connection lost:\n"
-                            + e.getMessage();
-                    getActivity().runOnUiThread(new Runnable(){
-
-                        @Override
-                        public void run() {
-                            Log.d(getClass().getSimpleName(), msgConnectionLost);
-
-                        }});
-                    onDestroy();
-                    break;
+                e.printStackTrace();
                 }
-            }}
-        }
-        
-        public void sendMessage(){
-         try{
-             connectedOutputStream.write(error_message);
-        } catch (IOException e) {
-          e.printStackTrace();   
-         }
-        }
-
-        public void write(byte[] buffer) {
-            try {
-                connectedOutputStream.write(buffer);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
-        }
 
-        public void cancel() {
-            try {
-                connectedBluetoothSocket.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
 
+        }
     public ArrayList<String> readFromFile() {
 
 
@@ -538,62 +592,44 @@ after connected
         DataPath var = new DataPath();
 
 
-
         try {
 
             //InputStream inputStream = getContext().openFileInput("text2abnormal.txt");
             InputStream inputStream = this.getResources().openRawResource(R.raw.test4);
 
+            int i = 0;
 
-
-            while ( inputStream != null ) {
+            if ( inputStream != null ) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 String receiveString = "";
                 //StringBuilder stringBuilder = new StringBuilder();
 
-                Log.d(getClass().getSimpleName(), "test");
 
+                while ((receiveString = bufferedReader.readLine()) != null) {
+                    Log.d(getClass().getSimpleName(), "Received String: "+ receiveString+" "+i);
+                    //while ((receiveString = bufferedReader.readLine())!= "-10.0" && (receiveString = bufferedReader.readLine()) !="-15.0" && i<160) {
 
-                i=0;
-                receiveString = bufferedReader.readLine();
-                while (receiveString != "-10") {
-
-                    //stringBuilder.append(receiveString);
-                    if (i<160 && receiveString != null) {
+                        //stringBuilder.append(receiveString);
 
                         stringArray.add(i, receiveString);
                         doublevalue[i] = Double.parseDouble(stringArray.get(i));
-                        Log.d(getClass().getSimpleName(), "Input: " + doublevalue[i] + i);
+                        Log.d(getClass().getSimpleName(), "Input: "+ doublevalue[i]+" "+ i);
 
                         i++;
-                    }
-                    //Log.d(getClass().getSimpleName(), "before entering the delay");
 
-                       // DataPath.DecisionMaking(doublevalue);
-
-                   /* handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                                // Do something after 5s = 5000ms
-                               // i=0;
-                            Log.d(getClass().getSimpleName(), "5 seconds delay over "+i);
+                        if (i == 161) {
+                            var.DecisionMaking(doublevalue);
+                            i=0;
                         }
-                    }, 5000);*/
-                    else {
-                        break;
-                    }
+                    //}
 
                 }
 
-               // i=0;
-                Log.d(getClass().getSimpleName(), "Inputstream: "+ InputStream);
 
-
+                inputStream.close();
                 //ret = stringBuilder.toString();
             }
-
-            inputStream.close();
         }
         catch (FileNotFoundException e) {
             Log.e("login activity", "File not found: " + e.toString());
@@ -601,71 +637,11 @@ after connected
             Log.e("login activity", "Can not read file: " + e.toString());
         }
 
-        /*for (int a=0;a<i;a++) {
-            var.DecisionMaking(doublevalue[a]);
-            //Log.d(getClass().getSimpleName(), "Passed value: "+ doublevalue[a]+ a);
-        }*/
+
 
         return stringArray;
     }
-
-}
-
-/*    void ListenforData() {
-        final Handler handler = new Handler();
-        final byte delimiter = 10; //This is the ASCII code for a newline character
-        stopWorker = false;
-        readBufferPosition = 0;
-        readBuffer = new byte[1024];
-        workerThread = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                while(!Thread.currentThread().isInterrupted() && !stopWorker)
-                {
-                    try
-                    {
-
-                        int bytesAvailable = InputStream.available();
-                        if(bytesAvailable > 0)
-                        {
-                            byte[] packet = new byte[bytesAvailable];
-                            InputStream.read(packet);
-                            for(int i=0;i<bytesAvailable;i++)
-                            {
-                                byte b = packet[i];
-                                if(b != delimiter)
-                                {
-                                    byte[] encodedBytes = new byte[readBufferPosition];
-                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-                                    //final String data = new String(encodedBytes, "US-ASCII");
-                                    readBufferPosition = 0;
-
-                                    handler.post(new Runnable()
-                                    {
-                                        public void run()
-                                        {
-                                            series.appendData(new DataPoint(lastX++, RANDOM.nextDouble() * 10d), true, 50);
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    readBuffer[readBufferPosition++] = b;
-                                }
-                            }
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        stopWorker = true;
-                    }
-                }
-            }
-        });
-
-        workerThread.start();
-    }*/
+    }
 
 
 

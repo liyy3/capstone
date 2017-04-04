@@ -53,6 +53,7 @@ public class DataPath extends Tab3 {
            // Log.d(getClass().getSimpleName(), "start flag ==0");
             for (i=0; i<160; i++){
                 baseline[i] = numbersFromBluetooth[i];
+                Log.d(DataPath.class.getSimpleName(), "received array: "+numbersFromBluetooth[i]);
                 //Log.d(getClass().getSimpleName(),"baseline is "+baseline[i]);
 
                 if (i==80) {

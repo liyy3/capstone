@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void  showNotification(View v)
+    public void  showNotification()
     {
 
         AlertDialog.Builder builder= new AlertDialog.Builder(MainActivity.this);
