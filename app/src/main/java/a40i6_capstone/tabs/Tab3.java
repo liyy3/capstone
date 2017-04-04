@@ -53,20 +53,12 @@ public class Tab3 extends Fragment {
     public LineGraphSeries<DataPoint> series;
     public int lastX = 0;
     private final static int REQUEST_ENABLE_BT = 1;
-    //BluetoothAdapter blueAdaptor = null;
     private static final UUID my_uuid =UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    //private static UUID my_uuid;
     BluetoothDevice Device;
-    //BluetoothSocket Socket = null;
-    java.io.OutputStream OutputStream;
-    InputStream InputStream;
-    //Thread workerThread;
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
     public static double values;
     public static double[] doublevalue = new double[161];
-    public static double[] inputarray = new double[160];
-    public static DataPath sendArray = new DataPath();
     View rootView;
     MainActivity mActivity = new MainActivity();
     int emergency_flag=0;
@@ -99,7 +91,7 @@ public class Tab3 extends Fragment {
                         startstopmsg.setText("Device is now ON");
                         view.setTag(1); //pause
                         startGraph = true;
-                      //  sendMessage();
+
                         break;
                     case 1:
                         ((Button) view).setText("Start");
@@ -449,12 +441,6 @@ after connected
 
                                             double intvalue = Double.parseDouble(trimString);
                                             values = intvalue;
-                                            if (values == -10){
-                                                emergency_flag++;
-                                            } else if (emergency_flag == 3){
-                                                mActivity.showNotification();
-                                            }
-                                            //if(i%100 == 0){
 
                                             series.appendData(new DataPoint(lastX++, intvalue), true, 50);
                                             //}
@@ -595,7 +581,7 @@ after connected
         try {
 
             //InputStream inputStream = getContext().openFileInput("text2abnormal.txt");
-            InputStream inputStream = this.getResources().openRawResource(R.raw.test4);
+            InputStream inputStream = this.getResources().openRawResource(R.raw.test5);
 
             int i = 0;
 

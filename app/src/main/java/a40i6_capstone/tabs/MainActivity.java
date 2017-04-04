@@ -91,8 +91,15 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle("Title");
+                alertDialog.setMessage("Message");
+
+// Set the Icon for the Dialog
+                   // alertDialog.setIcon(R.drawable.icon);
+                    alertDialog.show();
             }
         });
 
@@ -101,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void  showNotification()
+    public void  showNotification(View view)
     {
 
         AlertDialog.Builder builder= new AlertDialog.Builder(MainActivity.this);

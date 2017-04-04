@@ -10,4 +10,5 @@
         <b>BASELINE tab</b>: Location of baseline image used for comparison purposes. New baseline needs to be recalibrated every six months.\n\n
         <b>HISTORY tab</b>: Listing of medical history.\n\n
         <b>CONTACT INFO tab</b>: Input Primary and Secondary contact information. They will be contacted automatically if an emergency occurs.\n\n</string>
+    <string name="Credits"> <b>\n Grace Li\n Monica Nasralla\n Radu Baciu\n Youstina Abdelsayed</b>\n\n</string>
 </resources>
