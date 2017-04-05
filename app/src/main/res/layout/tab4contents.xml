@@ -105,14 +105,20 @@
             android:text="Call Contact 1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/Name1"
-            android:layout_alignRight="@+id/section_label"
-            android:layout_alignEnd="@+id/section_label"
-            android:layout_marginRight="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="15dp"
-            android:id="@+id/call_button1" />
-
+            android:id="@+id/call_button1"
+            android:layout_marginTop="29dp"
+            android:layout_below="@+id/Number2"
+            android:layout_alignLeft="@+id/Number2"
+            android:layout_alignStart="@+id/Number2" />
+        <Button
+            android:text="Call Contact 2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/call_button2"
+            android:layout_marginTop="29dp"
+            android:layout_below="@+id/call_button1"
+            android:layout_alignLeft="@+id/Number2"
+            android:layout_alignStart="@+id/Number2" />
 
 
     </RelativeLayout>

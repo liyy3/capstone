@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -144,7 +146,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final long TOTAL_TIME = 5000; // miliseconds
+
+
+
+        final long TOTAL_TIME = 10000; // miliseconds
 
 
         new Handler().postDelayed(new Runnable() {
@@ -170,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         }, TOTAL_TIME);
 
         builder.show();
+
 
            // @Override
             //public void onClick(DialogInterface dialog, int which) {
@@ -327,9 +333,9 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "HOME";
                 case 1:
-                    return "BASELINE";
+                    return "EMERGENCY";
                 case 2:
-                    return "HISTORY";
+                    return "ECG GRAPH";
                 case 3:
                     return "CONTACT INFORMATION";
                 case 4:

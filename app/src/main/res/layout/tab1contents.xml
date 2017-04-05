@@ -24,7 +24,7 @@
         android:layout_width="400dp"
         android:layout_height="200dp"
         android:text="@string/Credits"
-        android:textSize="32sp"
+        android:textSize="20sp"
         android:gravity="center"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
@@ -37,10 +37,8 @@
         android:adjustViewBounds="true"
         android:maxWidth="600dp"
         android:maxHeight="600dp"
-
         app:srcCompat="@drawable/logo"
         android:id="@+id/imageViewlogo"
-        android:layout_above="@+id/Home_text"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="33dp" />

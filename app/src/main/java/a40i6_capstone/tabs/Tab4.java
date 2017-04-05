@@ -41,6 +41,7 @@ public class Tab4 extends Fragment {
     private EditText Relationship2;
     private EditText Number2;
     private Button button;
+    private Button button_2;
 
     Context TabContext;
 
@@ -66,7 +67,8 @@ public class Tab4 extends Fragment {
 
         button = (Button) rootView.findViewById(R.id.call_button1);
         button.setTag(0);
-
+        button_2 = (Button) rootView.findViewById(R.id.call_button2);
+        button_2.setTag(0);
         TabContext = container.getContext();
 
 
@@ -79,6 +81,30 @@ public class Tab4 extends Fragment {
 
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 number = Number1.getText().toString();
+                no = "tel:" + number;
+
+                callIntent.setData(Uri.parse(no));
+
+                //Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "6477808035"));
+
+                if (ContextCompat.checkSelfPermission(TabContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions((Activity) TabContext, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_PHONE_CALL);
+                } else {
+                    startActivity(callIntent);
+                }
+
+            }
+
+
+        });
+        button_2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                //int permissionCheck = ContextCompat.checkSelfPermission(this,
+                //Manifest.permission.WRITE_CALENDAR);
+
+                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                number = Number2.getText().toString();
                 no = "tel:" + number;
 
                 callIntent.setData(Uri.parse(no));
